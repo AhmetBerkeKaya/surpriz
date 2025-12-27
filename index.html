@@ -1,76 +1,69 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sürpriz</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html {
-            height: 100%;
-            overflow-x: hidden;
         }
 
         body {
             font-family: 'Georgia', serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            min-height: -webkit-fill-available;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            padding: 15px;
-            touch-action: manipulation;
         }
 
         .container {
             text-align: center;
             color: white;
             max-width: 800px;
-            width: 100%;
-            padding: 15px;
+            padding: 40px;
         }
 
         #intro-text {
-            font-size: clamp(16px, 4vw, 28px);
-            line-height: 1.6;
-            margin-bottom: clamp(20px, 5vh, 40px);
-            min-height: clamp(120px, 25vh, 180px);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            padding: 0 5px;
-            word-wrap: break-word;
+            font-size: 28px;
+            line-height: 1.8;
+            margin-bottom: 50px;
+            min-height: 200px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .cursor {
             display: inline-block;
-            width: 2px;
-            height: clamp(18px, 4vw, 28px);
+            width: 3px;
+            height: 30px;
             background: white;
             animation: blink 0.7s infinite;
-            margin-left: 1px;
+            margin-left: 2px;
         }
 
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
 
         .choices {
             display: none;
-            flex-direction: column;
-            gap: 15px;
+            gap: 40px;
             justify-content: center;
-            align-items: center;
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
+            margin-top: 40px;
         }
 
         .choices.show {
@@ -79,51 +72,21 @@
 
         .choice-btn {
             background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            padding: clamp(15px, 4vw, 25px) clamp(25px, 6vw, 40px);
-            font-size: clamp(16px, 4vw, 22px);
+            border: 3px solid white;
+            padding: 25px 50px;
+            font-size: 24px;
             color: white;
             cursor: pointer;
-            border-radius: 12px;
+            border-radius: 15px;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             font-family: 'Georgia', serif;
-            width: 100%;
-            max-width: 280px;
-            touch-action: manipulation;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            user-select: none;
         }
 
-        .choice-btn:active {
+        .choice-btn:hover {
             background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.98);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-        }
-
-        @media (hover: hover) and (pointer: fine) {
-            .choice-btn:hover {
-                background: rgba(255, 255, 255, 0.4);
-                transform: scale(1.05);
-                box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-            }
-        }
-
-        @media (min-width: 768px) {
-            .choices {
-                flex-direction: row;
-                gap: 30px;
-            }
-            
-            .choice-btn {
-                width: auto;
-                min-width: 200px;
-            }
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
         }
 
         .canvas-container {
@@ -131,57 +94,56 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
+            width: 100vw;
+            height: 100vh;
+            background: black;
             z-index: 1000;
             overflow: hidden;
-            touch-action: none;
         }
 
         .canvas-container.show {
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: none;
+            /* Mobilde kaydırmayı engelle */
         }
 
-        #heart {
+        canvas {
             display: block;
-            width: 100%;
-            height: 100%;
             position: absolute;
             top: 0;
             left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            /* Oranları koru */
         }
 
-        /* Canvas wrapper for proper scaling */
-        .canvas-wrapper {
-            position: relative;
-            width: 500px;
-            height: 500px;
-            max-width: 90vw;
-            max-height: 90vh;
-            margin: 0 auto;
-        }
-
+        /* Mobil için ek optimizasyonlar */
         @media (max-width: 768px) {
-            .canvas-wrapper {
-                width: 400px;
-                height: 400px;
+            .canvas-container {
+                background: #000;
+            }
+
+            canvas {
+                image-rendering: optimizeSpeed;
+                /* Performans için */
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: optimize-contrast;
+                -ms-interpolation-mode: nearest-neighbor;
             }
         }
 
+        /* Çok küçük ekranlar için */
         @media (max-width: 480px) {
-            .canvas-wrapper {
-                width: 320px;
-                height: 320px;
-            }
-        }
-
-        @media (max-height: 600px) {
-            .canvas-wrapper {
-                width: 300px;
-                height: 300px;
+            .final-message {
+                font-size: 14px !important;
+                padding: 0 15px;
+                bottom: 20px;
             }
         }
 
@@ -195,43 +157,12 @@
             background-color: #000;
             overflow: hidden;
             perspective: 1000px;
-            touch-action: none;
         }
 
         .flower-container.show {
             display: flex;
             align-items: flex-end;
             justify-content: center;
-        }
-
-        .final-message {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            font-size: clamp(14px, 3.5vw, 20px);
-            text-align: center;
-            opacity: 0;
-            animation: fadeIn 2s 3s forwards;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            font-family: 'Georgia', serif;
-            padding: 0 15px;
-            width: 95%;
-            max-width: 400px;
-            z-index: 1001;
-            line-height: 1.4;
-        }
-
-        @media (max-height: 600px) {
-            .final-message {
-                bottom: 20px;
-                font-size: clamp(12px, 2.5vw, 16px);
-            }
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
         }
 
         .night {
@@ -242,42 +173,17 @@
             width: 100%;
             height: 100%;
             filter: blur(0.1vmin);
-            background-image: radial-gradient(ellipse at top, transparent 0%, #000), 
-            radial-gradient(ellipse at bottom, #000, rgba(145, 233, 255, 0.2)),
-            repeating-linear-gradient(220deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
-            repeating-linear-gradient(189deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
-            repeating-linear-gradient(148deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
-            linear-gradient(90deg, rgb(7, 107, 42), rgb(240, 240, 240));
+            background-image: radial-gradient(ellipse at top, transparent 0%, #000),
+                radial-gradient(ellipse at bottom, #000, rgba(145, 233, 255, 0.2)),
+                repeating-linear-gradient(220deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
+                repeating-linear-gradient(189deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
+                repeating-linear-gradient(148deg, rgb(0, 0, 0) 0px, rgb(0, 0, 0) 19px, transparent 19px, transparent 22px),
+                linear-gradient(90deg, rgb(7, 107, 42), rgb(240, 240, 240));
         }
 
         .flowers {
             position: relative;
-            transform: scale(0.8);
-            transform-origin: bottom center;
-        }
-
-        @media (max-width: 768px) and (orientation: portrait) {
-            .flowers {
-                transform: scale(0.6);
-            }
-        }
-
-        @media (max-width: 480px) and (orientation: portrait) {
-            .flowers {
-                transform: scale(0.45);
-            }
-        }
-
-        @media (max-height: 600px) {
-            .flowers {
-                transform: scale(0.5);
-            }
-        }
-
-        @media (max-height: 400px) {
-            .flowers {
-                transform: scale(0.35);
-            }
+            transform: scale(0.9);
         }
 
         .flower {
@@ -288,10 +194,25 @@
             animation: moving-flower-1 4s linear infinite;
         }
 
-        .flower--1 .flower__line { height: 60vmin; }
-        .flower--2 { left: 50%; transform: rotate(20deg); animation: moving-flower-2 4s linear infinite; }
-        .flower--2 .flower__line { height: 50vmin; }
-        .flower--3 { left: 50%; transform: rotate(-15deg); animation: moving-flower-3 4s linear infinite; }
+        .flower--1 .flower__line {
+            height: 70vmin;
+        }
+
+        .flower--2 {
+            left: 50%;
+            transform: rotate(20deg);
+            animation: moving-flower-2 4s linear infinite;
+        }
+
+        .flower--2 .flower__line {
+            height: 60vmin;
+        }
+
+        .flower--3 {
+            left: 50%;
+            transform: rotate(-15deg);
+            animation: moving-flower-3 4s linear infinite;
+        }
 
         .flower__leafs {
             position: relative;
@@ -302,8 +223,8 @@
             position: absolute;
             bottom: 0;
             left: 50%;
-            width: 7vmin;
-            height: 10vmin;
+            width: 8vmin;
+            height: 11vmin;
             border-radius: 51% 49% 47% 53%/44% 45% 55% 69%;
             background: linear-gradient(to top, #ee5286, #ee5286);
             transform-origin: bottom center;
@@ -311,28 +232,37 @@
             box-shadow: inset 0 0 2vmin rgba(255, 255, 255, 0.5);
         }
 
-        .flower__leaf--1 { transform: translate(-10%, 1%) rotateY(40deg) rotateX(-50deg); }
-        .flower__leaf--2 { transform: translate(-50%, -4%) rotateX(40deg); }
-        .flower__leaf--3 { transform: translate(-90%, 0%) rotateY(45deg) rotateX(50deg); }
+        .flower__leaf--1 {
+            transform: translate(-10%, 1%) rotateY(40deg) rotateX(-50deg);
+        }
+
+        .flower__leaf--2 {
+            transform: translate(-50%, -4%) rotateX(40deg);
+        }
+
+        .flower__leaf--3 {
+            transform: translate(-90%, 0%) rotateY(45deg) rotateX(50deg);
+        }
+
         .flower__leaf--4 {
-            width: 7vmin;
-            height: 7vmin;
+            width: 8vmin;
+            height: 8vmin;
             border-radius: 4vmin 10vmin 4vmin 4vmin;
             transform: translate(0%, 18%) rotateX(70deg) rotate(-43deg);
         }
 
         .flower__white-circle {
             position: absolute;
-            left: -3vmin;
-            top: -2.5vmin;
-            width: 8vmin;
-            height: 3.5vmin;
+            left: -3.5vmin;
+            top: -3vmin;
+            width: 9vmin;
+            height: 4vmin;
             border-radius: 50%;
             background-color: #fff;
         }
 
         .flower__line {
-            width: 1.2vmin;
+            width: 1.5vmin;
             background: linear-gradient(to top, transparent 10%, #583e08, #944415);
             box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.5);
             animation: grow-flower-tree 2s backwards;
@@ -341,151 +271,125 @@
         .flower__light {
             position: absolute;
             bottom: 0;
-            width: 0.8vmin;
-            height: 0.8vmin;
+            width: 1vmin;
+            height: 1vmin;
             background-color: rgb(255, 251, 0);
             border-radius: 50%;
             filter: blur(0.2vmin);
             animation: light-ans 4s linear infinite backwards;
         }
 
-        .flower__light:nth-child(odd) { background-color: #f76baf; }
-        .flower__light--1 { left: -1.5vmin; animation-delay: 1s; }
-        .flower__light--2 { left: 2.5vmin; animation-delay: 0.5s; }
-        .flower__light--3 { left: -5vmin; animation-delay: 0.3s; }
-        .flower__light--4 { left: 5vmin; animation-delay: 0.9s; }
+        .flower__light:nth-child(odd) {
+            background-color: #f76baf;
+        }
+
+        .flower__light--1 {
+            left: -2vmin;
+            animation-delay: 1s;
+        }
+
+        .flower__light--2 {
+            left: 3vmin;
+            animation-delay: 0.5s;
+        }
+
+        .flower__light--3 {
+            left: -6vmin;
+            animation-delay: 0.3s;
+        }
+
+        .flower__light--4 {
+            left: 6vmin;
+            animation-delay: 0.9s;
+        }
 
         @keyframes moving-flower-1 {
-            0%, 100% { transform: rotate(2deg); }
-            50% { transform: rotate(-2deg); }
+
+            0%,
+            100% {
+                transform: rotate(2deg);
+            }
+
+            50% {
+                transform: rotate(-2deg);
+            }
         }
 
         @keyframes moving-flower-2 {
-            0%, 100% { transform: rotate(18deg); }
-            50% { transform: rotate(14deg); }
+
+            0%,
+            100% {
+                transform: rotate(18deg);
+            }
+
+            50% {
+                transform: rotate(14deg);
+            }
         }
 
         @keyframes moving-flower-3 {
-            0%, 100% { transform: rotate(-18deg); }
-            50% { transform: rotate(-20deg) rotateY(-10deg); }
+
+            0%,
+            100% {
+                transform: rotate(-18deg);
+            }
+
+            50% {
+                transform: rotate(-20deg) rotateY(-10deg);
+            }
         }
 
         @keyframes grow-flower-tree {
-            0% { height: 0; }
+            0% {
+                height: 0;
+            }
         }
 
         @keyframes blooming-flower {
-            0% { transform: scale(0); }
+            0% {
+                transform: scale(0);
+            }
         }
 
         @keyframes light-ans {
-            0% { opacity: 0; transform: translateY(0); }
-            25% { opacity: 1; transform: translateY(-5vmin) translateX(-2vmin); }
-            50% { opacity: 1; transform: translateY(-15vmin) translateX(2vmin); }
-            75% { transform: translateY(-20vmin) translateX(-2vmin); }
-            100% { transform: translateY(-30vmin); opacity: 0; }
-        }
+            0% {
+                opacity: 0;
+                transform: translateY(0);
+            }
 
-        /* Loading fallback for slower devices */
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            transition: opacity 0.5s;
-        }
+            25% {
+                opacity: 1;
+                transform: translateY(-5vmin) translateX(-2vmin);
+            }
 
-        .loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+            50% {
+                opacity: 1;
+                transform: translateY(-15vmin) translateX(2vmin);
+            }
 
-        .loader {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
+            75% {
+                transform: translateY(-20vmin) translateX(-2vmin);
+            }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Prevent text selection */
-        .no-select {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* Back button */
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            z-index: 1002;
-            font-family: 'Georgia', serif;
-            backdrop-filter: blur(10px);
-            display: none;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn.show {
-            display: block;
-        }
-
-        .back-btn:active {
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.95);
-        }
-
-        @media (max-width: 480px) {
-            .back-btn {
-                top: 15px;
-                left: 15px;
-                padding: 8px 15px;
-                font-size: 14px;
+            100% {
+                transform: translateY(-30vmin);
+                opacity: 0;
             }
         }
     </style>
 </head>
+
 <body>
-    <!-- Loading screen for mobile optimization -->
-    <div class="loading" id="loading">
-        <div class="loader"></div>
-    </div>
-
-    <button class="back-btn no-select" onclick="goBack()">← Geri</button>
-
     <div class="container">
         <div id="intro-text"></div>
         <div class="choices">
-            <button class="choice-btn no-select" onclick="showHeart()">💝 Sürpriz 1</button>
-            <button class="choice-btn no-select" onclick="showFlower()">🌸 Sürpriz 2</button>
+            <button class="choice-btn" onclick="showHeart()">💝 Sürpriz 1</button>
+            <button class="choice-btn" onclick="showFlower()">🌸 Sürpriz 2</button>
         </div>
     </div>
 
     <div class="canvas-container" id="heart-canvas">
-        <div class="canvas-wrapper">
-            <canvas id="heart"></canvas>
-        </div>
+        <canvas id="heart"></canvas>
         <div class="final-message">Yakın zamanda gerçeğini verebilirim... 💖</div>
     </div>
 
@@ -539,44 +443,10 @@
     </div>
 
     <script>
-        // Mobile optimization and loading
-        document.addEventListener('DOMContentLoaded', function() {
-            const loading = document.getElementById('loading');
-            
-            // Hide loading screen after content is loaded
-            setTimeout(() => {
-                loading.classList.add('hidden');
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    startTypeWriter();
-                }, 500);
-            }, 800);
-        });
-
-        // Prevent zoom on double tap
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-
-        // Prevent context menu on long press
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
         const text = "Sana özel bir sürprizim var... İki seçenekten birini seç ve gör! 💫";
         let index = 0;
         const textElement = document.getElementById('intro-text');
         const choicesElement = document.querySelector('.choices');
-        const backBtn = document.querySelector('.back-btn');
-
-        function startTypeWriter() {
-            typeWriter();
-        }
 
         function typeWriter() {
             if (index < text.length) {
@@ -591,117 +461,118 @@
             }
         }
 
-        function goBack() {
-            // Cleanup heart animation if running
-            if (window.cleanupHeart) {
-                window.cleanupHeart();
-            }
-            
-            // Hide all special containers
-            document.getElementById('heart-canvas').classList.remove('show');
-            document.getElementById('flower-display').classList.remove('show');
-            
-            // Show main container
-            document.querySelector('.container').style.display = 'block';
-            backBtn.classList.remove('show');
-            
-            // Reset intro text
-            textElement.innerHTML = text;
-            choicesElement.classList.add('show');
-        }
+        setTimeout(typeWriter, 500);
 
         function showHeart() {
             document.querySelector('.container').style.display = 'none';
-            backBtn.classList.add('show');
             document.getElementById('heart-canvas').classList.add('show');
-            setTimeout(() => {
-                drawHeart();
-            }, 100);
+            drawHeart();
         }
 
         function showFlower() {
             document.querySelector('.container').style.display = 'none';
-            backBtn.classList.add('show');
             document.getElementById('flower-display').classList.add('show');
-            
-            // Force reflow for better mobile performance
-            setTimeout(() => {
-                document.querySelector('.flowers').style.transform = 'scale(0.8)';
-            }, 10);
         }
 
-        // Original heart animation - fixed for mobile
         function drawHeart() {
-            const canvas = document.getElementById('heart');
-            const ctx = canvas.getContext('2d');
-            const wrapper = document.querySelector('.canvas-wrapper');
-            
-            // Sabit boyutlar - orijinal boyutta
-            let width = wrapper.clientWidth;
-            let height = wrapper.clientHeight;
-            
-            // High DPI için
-            const dpr = window.devicePixelRatio || 1;
-            
-            function resizeCanvas() {
-                width = wrapper.clientWidth;
-                height = wrapper.clientHeight;
-                
-                canvas.width = width * dpr;
-                canvas.height = height * dpr;
-                
-                canvas.style.width = width + 'px';
-                canvas.style.height = height + 'px';
-                
-                ctx.scale(dpr, dpr);
-                
-                // Temiz arkaplan
-                ctx.fillStyle = "#000";
-                ctx.fillRect(0, 0, width, height);
-                
-                return { width, height };
-            }
-            
-            resizeCanvas();
-            
-            // Mobile detection
-            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-                navigator.userAgent.toLowerCase()
+            // Mevcut requestAnimationFrame kodu aynı kalacak
+
+            // Mobil kontrolünü geliştir
+            var isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+                ((navigator.userAgent || navigator.vendor || window.opera)).toLowerCase()
             );
-            
-            // Kalp fonksiyonu
-            const heartPosition = function (rad) {
+
+            // Ekran boyutuna göre dinamik ayarlar
+            var screenWidth = window.innerWidth;
+            var screenHeight = window.innerHeight;
+
+            // Mobil için optimize edilmiş ayarlar
+            var koef = isMobile ? 1 : 1; // Oranı 1 yapıyoruz, çünkü canvas zaten responsive
+
+            var canvas = document.getElementById('heart');
+            var ctx = canvas.getContext('2d');
+
+            // Canvas boyutlarını window size'a göre ayarla
+            var width = canvas.width = screenWidth * koef;
+            var height = canvas.height = screenHeight * koef;
+
+            // Canvas CSS boyutlarını da ayarla
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.objectFit = 'contain';
+
+            ctx.fillStyle = "rgba(0,0,0,1)";
+            ctx.fillRect(0, 0, width, height);
+
+            var heartPosition = function (rad) {
                 return [Math.pow(Math.sin(rad), 3),
-                    -(15 * Math.cos(rad) - 5 *
+                -(15 * Math.cos(rad) - 5 *
                     Math.cos(2 * rad) - 2 *
                     Math.cos(3 * rad) - Math.cos(4 * rad))];
             };
 
-            const scaleAndTranslate = function (pos, sx, sy, dx, dy) {
+            var scaleAndTranslate = function (pos, sx, sy, dx, dy) {
                 return [dx + pos[0] * sx, dy + pos[1] * sy];
             };
-            
-            // Kalp boyutu - ekrana göre optimize
-            const heartScale = Math.min(width, height) / 20; // Orijinal orana yakın
-            const scale1 = heartScale * 1.2;
-            const scale2 = heartScale * 0.8;
-            const scale3 = heartScale * 0.5;
-            
-            const pointsOrigin = [];
-            let i;
-            const dr = 0.1;
-            
-            // Kalp noktalarını oluştur
-            for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale1, scale1 * 0.7, 0, 0));
-            for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale2, scale2 * 0.7, 0, 0));
-            for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale3, scale3 * 0.7, 0, 0));
-            const heartPointsCount = pointsOrigin.length;
 
-            const targetPoints = [];
-            const pulse = function (kx, ky) {
+            var updateCanvasSize = function () {
+                // Yeni ekran boyutlarını al
+                screenWidth = window.innerWidth;
+                screenHeight = window.innerHeight;
+
+                // Canvas boyutlarını güncelle
+                width = canvas.width = screenWidth * koef;
+                height = canvas.height = screenHeight * koef;
+
+                // Canvas CSS boyutlarını güncelle
+                canvas.style.width = '100vw';
+                canvas.style.height = '100vh';
+
+                ctx.fillStyle = "rgba(0,0,0,1)";
+                ctx.fillRect(0, 0, width, height);
+            };
+
+            // Resize event listener'ı ekle
+            window.addEventListener('resize', updateCanvasSize);
+
+            // Trace sayısını ekran boyutuna göre ayarla
+            var traceCount = isMobile ? 25 : 50;
+            if (screenWidth < 400) traceCount = 15;
+
+            var pointsOrigin = [];
+            var i;
+            var dr = isMobile ? 0.4 : 0.1; // Mobilde daha az nokta için artırıyoruz
+
+            // Kalp boyutunu ekran boyutuna göre dinamik ayarla
+            var screenMin = Math.min(screenWidth, screenHeight);
+            var baseScale = screenMin * 0.15; // Temel ölçek
+
+            // Mobil için daha büyük kalp
+            if (isMobile) {
+                baseScale = screenMin * 0.2;
+            }
+
+            var scale1 = baseScale * 0.7;
+            var scale2 = baseScale * 0.5;
+            var scale3 = baseScale * 0.3;
+
+            // Küçük ekranlar için daha az nokta
+            var step = dr;
+            if (screenWidth < 768) {
+                step = 0.5;
+            }
+
+            for (i = 0; i < Math.PI * 2; i += step)
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale1, scale1 * 0.7, 0, 0));
+            for (i = 0; i < Math.PI * 2; i += step)
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale2, scale2 * 0.7, 0, 0));
+            for (i = 0; i < Math.PI * 2; i += step)
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale3, scale3 * 0.7, 0, 0));
+
+            var heartPointsCount = pointsOrigin.length;
+
+            var targetPoints = [];
+            var pulse = function (kx, ky) {
                 for (i = 0; i < pointsOrigin.length; i++) {
                     targetPoints[i] = [];
                     targetPoints[i][0] = kx * pointsOrigin[i][0] + width / 2;
@@ -709,57 +580,54 @@
                 }
             };
 
-            // Particle'ları oluştur
-            const e = [];
-            const traceCount = isMobile ? 25 : 50;
-            
-            for (i = 0; i < heartPointsCount; i++) {
-                var x = Math.random() * width;
-                var y = Math.random() * height;
+            var e = [];
+            // Partikül sayısını ekran boyutuna göre ayarla
+            var particleCount = isMobile ? Math.min(30, heartPointsCount) : heartPointsCount;
+
+            for (i = 0; i < particleCount; i++) {
+                var x = rand() * width;
+                var y = rand() * height;
                 e[i] = {
                     vx: 0,
                     vy: 0,
-                    R: isMobile ? 2 : 3, // Mobilde biraz daha küçük
-                    speed: Math.random() + 3, // Daha yavaş
-                    q: ~~(Math.random() * heartPointsCount),
+                    R: isMobile ? 1.5 : 2, // Mobilde daha küçük noktalar
+                    speed: rand() + (isMobile ? 3 : 5), // Mobilde daha yavaş
+                    q: ~~(rand() * heartPointsCount),
                     D: 2 * (i % 2) - 1,
-                    force: 0.2 * Math.random() + 0.6,
-                    f: "hsla(" + ~~(40 * Math.random() + 320) + "," + ~~(60 * Math.random() + 30) + "%," + ~~(60 * Math.random() + 30) + "%,.5)",
+                    force: isMobile ? (0.15 * rand() + 0.6) : (0.2 * rand() + 0.7), // Mobilde daha az kuvvet
+                    f: "hsla(0," + ~~(40 * rand() + 60) + "%," + ~~(60 * rand() + 20) + "%,.3)",
                     trace: []
                 };
-                for (let k = 0; k < traceCount; k++) e[i].trace[k] = {x: x, y: y};
+                for (var k = 0; k < traceCount; k++) e[i].trace[k] = { x: x, y: y };
             }
 
-            const config = {
-                traceK: 0.4,
-                timeDelta: 0.01
+            var config = {
+                traceK: isMobile ? 0.5 : 0.4, // Mobilde daha hızlı iz kaybolması
+                timeDelta: isMobile ? 0.015 : 0.01 // Mobilde daha yavaş animasyon
             };
 
-            let time = 0;
-            let animationId;
-            
-            function loop() {
+            var time = 0;
+            var loop = function () {
                 var n = -Math.cos(time);
                 pulse((1 + n) * .5, (1 + n) * .5);
                 time += ((Math.sin(time)) < 0 ? 9 : (n > 0.8) ? .2 : 1) * config.timeDelta;
-                
-                // Arkaplanı temizle
-                ctx.fillStyle = "rgba(0,0,0,.1)";
+
+                // Mobilde daha hızlı temizleme
+                ctx.fillStyle = isMobile ? "rgba(0,0,0,.2)" : "rgba(0,0,0,.1)";
                 ctx.fillRect(0, 0, width, height);
-                
-                // Particle'ları çiz
+
                 for (i = e.length; i--;) {
                     var u = e[i];
                     var q = targetPoints[u.q];
                     var dx = u.trace[0].x - q[0];
                     var dy = u.trace[0].y - q[1];
                     var length = Math.sqrt(dx * dx + dy * dy);
-                    
+
                     if (10 > length) {
-                        if (0.95 < Math.random()) {
-                            u.q = ~~(Math.random() * heartPointsCount);
+                        if (0.95 < rand()) {
+                            u.q = ~~(rand() * heartPointsCount);
                         } else {
-                            if (0.99 < Math.random()) {
+                            if (0.99 < rand()) {
                                 u.D *= -1;
                             }
                             u.q += u.D;
@@ -769,78 +637,33 @@
                             }
                         }
                     }
-                    
+
                     u.vx += -dx / length * u.speed;
                     u.vy += -dy / length * u.speed;
                     u.trace[0].x += u.vx;
                     u.trace[0].y += u.vy;
                     u.vx *= u.force;
                     u.vy *= u.force;
-                    
-                    for (let k = 0; k < u.trace.length - 1;) {
+
+                    for (k = 0; k < u.trace.length - 1;) {
                         var T = u.trace[k];
                         var N = u.trace[++k];
                         N.x -= config.traceK * (N.x - T.x);
                         N.y -= config.traceK * (N.y - T.y);
                     }
-                    
-                    // Particle çizimi
+
                     ctx.fillStyle = u.f;
                     for (k = 0; k < u.trace.length; k++) {
-                        // Daha belirgin particle'lar
-                        ctx.beginPath();
-                        ctx.arc(u.trace[k].x, u.trace[k].y, u.R, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        // Parlaklık efekti
-                        ctx.beginPath();
-                        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-                        ctx.arc(u.trace[k].x - u.R * 0.3, u.trace[k].y - u.R * 0.3, u.R * 0.5, 0, Math.PI * 2);
-                        ctx.fill();
+                        // Mobilde daha büyük noktalar
+                        var pointSize = isMobile ? 1.5 : 1;
+                        ctx.fillRect(u.trace[k].x, u.trace[k].y, pointSize, pointSize);
                     }
                 }
-                
-                animationId = requestAnimationFrame(loop);
-            }
-            
-            // Animasyonu başlat
-            loop();
-            
-            // Yeniden boyutlandırma
-            function handleResize() {
-                cancelAnimationFrame(animationId);
-                resizeCanvas();
-                
-                // Particle'ları resetle
-                for (i = 0; i < e.length; i++) {
-                    e[i].trace = [];
-                    for (let k = 0; k < traceCount; k++) {
-                        e[i].trace[k] = {
-                            x: Math.random() * width,
-                            y: Math.random() * height
-                        };
-                    }
-                }
-                
-                time = 0;
-                loop();
-            }
-            
-            window.addEventListener('resize', handleResize);
-            
-            // Cleanup fonksiyonu
-            window.cleanupHeart = function() {
-                cancelAnimationFrame(animationId);
-                window.removeEventListener('resize', handleResize);
+                window.requestAnimationFrame(loop, canvas);
             };
+            loop();
         }
-        
-        // Cleanup on page leave
-        window.addEventListener('beforeunload', function() {
-            if (window.cleanupHeart) {
-                window.cleanupHeart();
-            }
-        });
     </script>
 </body>
+
 </html>
