@@ -143,11 +143,32 @@
             display: block;
         }
 
-        canvas {
+        #heart {
             display: block;
             width: 100% !important;
             height: 100% !important;
-            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .flower-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            perspective: 1000px;
+            touch-action: none;
+        }
+
+        .flower-container.show {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
 
         .final-message {
@@ -178,25 +199,6 @@
 
         @keyframes fadeIn {
             to { opacity: 1; }
-        }
-
-        .flower-container {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            overflow: hidden;
-            perspective: 1000px;
-            touch-action: none;
-        }
-
-        .flower-container.show {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
         }
 
         .night {
@@ -393,6 +395,36 @@
             -ms-user-select: none;
             user-select: none;
         }
+
+        /* Heart instructions for mobile */
+        .heart-instruction {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: clamp(12px, 2.5vw, 16px);
+            text-align: center;
+            opacity: 0.8;
+            z-index: 1002;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-height: 500px) {
+            .heart-instruction {
+                top: 10px;
+                font-size: clamp(10px, 2vw, 14px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -410,6 +442,7 @@
     </div>
 
     <div class="canvas-container" id="heart-canvas">
+        <div class="heart-instruction">Kalbi görmek için ekrana dokunun veya bekleyin ❤️</div>
         <canvas id="heart"></canvas>
         <div class="final-message">Yakın zamanda gerçeğini verebilirim... 💖</div>
     </div>
@@ -518,7 +551,9 @@
         function showHeart() {
             document.querySelector('.container').style.display = 'none';
             document.getElementById('heart-canvas').classList.add('show');
-            drawHeart();
+            setTimeout(() => {
+                drawHeart();
+            }, 100);
         }
 
         function showFlower() {
@@ -531,106 +566,263 @@
             }, 10);
         }
 
-        // Optimized heart animation for mobile
+        // Optimized heart animation for mobile - REVISED VERSION
         function drawHeart() {
             const canvas = document.getElementById('heart');
             const ctx = canvas.getContext('2d');
+            let animationId;
             
-            // Set canvas dimensions with device pixel ratio for crisp rendering
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
+            // Kalp şekli fonksiyonu
+            function heartShape(angle, scale) {
+                const t = angle;
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = -(13 * Math.cos(t) - 
+                           5 * Math.cos(2 * t) - 
+                           2 * Math.cos(3 * t) - 
+                           Math.cos(4 * t));
+                return { x: x * scale, y: y * scale };
+            }
             
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
+            // Canvas boyutunu ayarla
+            function resizeCanvas() {
+                const container = document.getElementById('heart-canvas');
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                
+                // High DPI display support
+                const dpr = window.devicePixelRatio || 1;
+                
+                // Set canvas dimensions
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                
+                // Set CSS dimensions
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                
+                // Scale context
+                ctx.scale(dpr, dpr);
+                
+                return { width, height };
+            }
             
-            ctx.scale(dpr, dpr);
+            let { width, height } = resizeCanvas();
             
-            // Mobile performance optimization
+            // Kalp büyüklüğü - ekrana göre optimize edildi
+            const baseHeartSize = Math.min(width, height) * 0.35; // %35 daha büyük!
+            
+            // Mobile detection
             const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
                 navigator.userAgent.toLowerCase()
             );
             
-            const particleCount = isMobile ? 100 : 200;
+            // Particle system
             const particles = [];
+            const particleCount = isMobile ? 180 : 350; // Daha fazla particle
             
-            // Initialize particles
+            class Particle {
+                constructor() {
+                    this.reset();
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 3 + 2; // Daha büyük particle'lar
+                    this.baseHue = Math.random() * 60 + 300; // Pembe/mor tonları
+                    this.speed = Math.random() * 0.03 + 0.01;
+                }
+                
+                reset() {
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.radius = Math.random() * 0.3 + 0.7;
+                    this.pulseOffset = Math.random() * Math.PI * 2;
+                    this.pulseSpeed = Math.random() * 0.03 + 0.02;
+                }
+                
+                update(time) {
+                    // Kalp şeklinde hareket
+                    this.angle += this.speed;
+                    
+                    // Nabız efekti
+                    const pulse = Math.sin(time * this.pulseSpeed + this.pulseOffset) * 0.3 + 1;
+                    const currentScale = baseHeartSize * this.radius * pulse;
+                    
+                    // Kalp pozisyonu
+                    const pos = heartShape(this.angle, currentScale);
+                    this.targetX = width / 2 + pos.x;
+                    this.targetY = height / 2 + pos.y;
+                    
+                    // Yumuşak hareket
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    this.x += dx * 0.08;
+                    this.y += dy * 0.08;
+                    
+                    // Renk değişimi
+                    const hueShift = Math.sin(time * 0.5 + this.angle) * 30;
+                    this.hue = (this.baseHue + hueShift) % 360;
+                }
+                
+                draw() {
+                    // Ana parçacık
+                    ctx.beginPath();
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    gradient.addColorStop(0, `hsla(${this.hue}, 100%, 70%, 0.9)`);
+                    gradient.addColorStop(1, `hsla(${this.hue}, 100%, 70%, 0.1)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Işık efekti
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(255, 255, 255, 0.3)`;
+                    ctx.arc(this.x - this.size * 0.3, this.y - this.size * 0.3, this.size * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Create particles
             for (let i = 0; i < particleCount; i++) {
-                particles.push({
-                    x: Math.random() * rect.width,
-                    y: Math.random() * rect.height,
-                    vx: 0,
-                    vy: 0,
+                particles.push(new Particle());
+            }
+            
+            // Arkaplan parçacıkları
+            const bgParticles = [];
+            const bgCount = isMobile ? 80 : 150;
+            
+            for (let i = 0; i < bgCount; i++) {
+                bgParticles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
                     size: Math.random() * 2 + 1,
-                    color: `hsla(${Math.random() * 60 + 300}, 70%, 60%, 0.7)`,
-                    targetX: rect.width / 2,
-                    targetY: rect.height / 2,
-                    speed: Math.random() * 2 + 1
+                    speed: Math.random() * 0.8 + 0.3,
+                    opacity: Math.random() * 0.15 + 0.05,
+                    angle: Math.random() * Math.PI * 2
                 });
             }
             
-            function animate() {
+            // Animasyon
+            let startTime = null;
+            
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const time = (timestamp - startTime) * 0.001;
+                
+                // Arkaplan temizleme (hafif blur efekti)
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-                ctx.fillRect(0, 0, rect.width, rect.height);
+                ctx.fillRect(0, 0, width, height);
                 
-                const time = Date.now() * 0.001;
-                const heartScale = 15 + Math.sin(time) * 5;
-                
-                particles.forEach(particle => {
-                    // Heart shape equation
-                    const angle = Math.atan2(
-                        particle.y - rect.height / 2,
-                        particle.x - rect.width / 2
-                    );
+                // Arkaplan parçacıkları
+                bgParticles.forEach(p => {
+                    p.y += p.speed;
+                    p.angle += 0.01;
+                    p.x += Math.sin(p.angle) * 0.5;
                     
-                    const heartX = 16 * Math.pow(Math.sin(angle), 3);
-                    const heartY = -(13 * Math.cos(angle) - 
-                                    5 * Math.cos(2 * angle) - 
-                                    2 * Math.cos(3 * angle) - 
-                                    Math.cos(4 * angle));
-                    
-                    particle.targetX = rect.width / 2 + heartX * heartScale;
-                    particle.targetY = rect.height / 2 + heartY * heartScale;
-                    
-                    // Move towards target
-                    const dx = particle.targetX - particle.x;
-                    const dy = particle.targetY - particle.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance > 0) {
-                        particle.vx += (dx / distance) * particle.speed * 0.05;
-                        particle.vy += (dy / distance) * particle.speed * 0.05;
+                    if (p.y > height) {
+                        p.y = 0;
+                        p.x = Math.random() * width;
                     }
+                    if (p.x > width) p.x = 0;
+                    if (p.x < 0) p.x = width;
                     
-                    // Apply velocity
-                    particle.x += particle.vx;
-                    particle.y += particle.vy;
-                    
-                    // Apply friction
-                    particle.vx *= 0.95;
-                    particle.vy *= 0.95;
-                    
-                    // Draw particle
                     ctx.beginPath();
-                    ctx.fillStyle = particle.color;
-                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                     ctx.fill();
                 });
                 
-                requestAnimationFrame(animate);
+                // Ana parçacıkları güncelle
+                particles.forEach(p => {
+                    p.update(time);
+                    p.draw();
+                });
+                
+                // Kalp dış çizgisi (daha belirgin)
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.05) {
+                    const pos = heartShape(angle, baseHeartSize * 1.15);
+                    const x = width / 2 + pos.x;
+                    const y = height / 2 + pos.y;
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                
+                ctx.closePath();
+                const gradient = ctx.createLinearGradient(0, 0, width, height);
+                gradient.addColorStop(0, 'rgba(255, 105, 180, 0.4)');
+                gradient.addColorStop(1, 'rgba(147, 112, 219, 0.4)');
+                ctx.strokeStyle = gradient;
+                ctx.stroke();
+                
+                // Kalp içi hafif dolgu
+                ctx.fillStyle = 'rgba(255, 105, 180, 0.05)';
+                ctx.fill();
+                
+                animationId = requestAnimationFrame(animate);
             }
             
+            // Başlat
             animate();
             
-            // Handle resize
+            // Yeniden boyutlandırma
             function handleResize() {
-                const rect = canvas.getBoundingClientRect();
-                canvas.width = rect.width * dpr;
-                canvas.height = rect.height * dpr;
-                ctx.scale(dpr, dpr);
+                cancelAnimationFrame(animationId);
+                ({ width, height } = resizeCanvas());
+                
+                // Reset particles
+                particles.forEach(p => {
+                    p.x = Math.random() * width;
+                    p.y = Math.random() * height;
+                    p.reset();
+                });
+                
+                // Reset background particles
+                bgParticles.forEach(p => {
+                    p.x = Math.random() * width;
+                    p.y = Math.random() * height;
+                });
+                
+                startTime = null;
+                animate();
             }
             
             window.addEventListener('resize', handleResize);
+            
+            // Interactivity - tap to change heart size
+            let heartScale = 1;
+            let targetScale = 1;
+            
+            function handleTap(e) {
+                e.preventDefault();
+                targetScale = targetScale === 1 ? 1.3 : 1; // Toggle between normal and large
+            }
+            
+            canvas.addEventListener('click', handleTap);
+            canvas.addEventListener('touchstart', handleTap);
+            
+            // Cleanup
+            window.cleanupHeart = function() {
+                cancelAnimationFrame(animationId);
+                window.removeEventListener('resize', handleResize);
+                canvas.removeEventListener('click', handleTap);
+                canvas.removeEventListener('touchstart', handleTap);
+            };
         }
+        
+        // Cleanup on page leave
+        window.addEventListener('beforeunload', function() {
+            if (window.cleanupHeart) {
+                window.cleanupHeart();
+            }
+        });
     </script>
 </body>
 </html>
