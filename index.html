@@ -19,27 +19,30 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            padding: 20px;
         }
 
         .container {
             text-align: center;
             color: white;
             max-width: 800px;
-            padding: 40px;
+            width: 100%;
+            padding: 20px;
         }
 
         #intro-text {
-            font-size: 28px;
+            font-size: clamp(18px, 4vw, 28px);
             line-height: 1.8;
             margin-bottom: 50px;
-            min-height: 200px;
+            min-height: clamp(150px, 30vh, 200px);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            padding: 0 10px;
         }
 
         .cursor {
             display: inline-block;
             width: 3px;
-            height: 30px;
+            height: clamp(20px, 3vw, 30px);
             background: white;
             animation: blink 0.7s infinite;
             margin-left: 2px;
@@ -52,9 +55,12 @@
 
         .choices {
             display: none;
-            gap: 40px;
+            flex-direction: column;
+            gap: 20px;
             justify-content: center;
-            margin-top: 40px;
+            align-items: center;
+            margin-top: 30px;
+            width: 100%;
         }
 
         .choices.show {
@@ -64,20 +70,35 @@
         .choice-btn {
             background: rgba(255, 255, 255, 0.2);
             border: 3px solid white;
-            padding: 25px 50px;
-            font-size: 24px;
+            padding: 20px 40px;
+            font-size: clamp(18px, 4vw, 24px);
             color: white;
             cursor: pointer;
             border-radius: 15px;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             font-family: 'Georgia', serif;
+            width: 100%;
+            max-width: 300px;
+            touch-action: manipulation;
         }
 
-        .choice-btn:hover {
+        .choice-btn:hover,
+        .choice-btn:active {
             background: rgba(255, 255, 255, 0.4);
-            transform: scale(1.1);
+            transform: scale(1.05);
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        @media (min-width: 768px) {
+            .choices {
+                flex-direction: row;
+                gap: 40px;
+            }
+            
+            .choice-btn {
+                width: auto;
+            }
         }
 
         .canvas-container {
@@ -85,33 +106,51 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: black;
             z-index: 1000;
+            overflow: hidden;
         }
 
         .canvas-container.show {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         canvas {
             display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
         }
 
         .final-message {
-            position: absolute;
-            bottom: 50px;
+            position: fixed;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             color: white;
-            font-size: 32px;
+            font-size: clamp(16px, 3.5vw, 24px);
             text-align: center;
             opacity: 0;
-            animation: fadeIn 2s forwards;
+            animation: fadeIn 2s 3s forwards;
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
             font-family: 'Georgia', serif;
             padding: 0 20px;
+            width: 90%;
+            max-width: 500px;
+            z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .final-message {
+                bottom: 30px;
+                font-size: clamp(14px, 3vw, 20px);
+            }
         }
 
         @keyframes fadeIn {
@@ -134,6 +173,18 @@
             display: flex;
             align-items: flex-end;
             justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .flowers {
+                transform: scale(0.6);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flowers {
+                transform: scale(0.4);
+            }
         }
 
         .night {
@@ -386,8 +437,8 @@
             var koef = mobile ? 0.5 : 1;
             var canvas = document.getElementById('heart');
             var ctx = canvas.getContext('2d');
-            var width = canvas.width = koef * innerWidth;
-            var height = canvas.height = koef * innerHeight;
+            var width = canvas.width = koef * window.innerWidth;
+            var height = canvas.height = koef * window.innerHeight;
             var rand = Math.random;
             ctx.fillStyle = "rgba(0,0,0,1)";
             ctx.fillRect(0, 0, width, height);
@@ -403,23 +454,32 @@
                 return [dx + pos[0] * sx, dy + pos[1] * sy];
             };
 
-            window.addEventListener('resize', function () {
-                width = canvas.width = koef * innerWidth;
-                height = canvas.height = koef * innerHeight;
+            var updateCanvasSize = function() {
+                width = canvas.width = koef * window.innerWidth;
+                height = canvas.height = koef * window.innerHeight;
                 ctx.fillStyle = "rgba(0,0,0,1)";
                 ctx.fillRect(0, 0, width, height);
-            });
+            };
+
+            window.addEventListener('resize', updateCanvasSize);
 
             var traceCount = mobile ? 20 : 50;
             var pointsOrigin = [];
             var i;
             var dr = mobile ? 0.3 : 0.1;
+            
+            // Kalp boyutunu ekran boyutuna göre ayarla
+            var heartScale = Math.min(width, height) / 15;
+            var scale1 = heartScale * 0.7;
+            var scale2 = heartScale * 0.5;
+            var scale3 = heartScale * 0.3;
+            
             for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), 210, 13, 0, 0));
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale1, scale1 * 0.7, 0, 0));
             for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), 150, 9, 0, 0));
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale2, scale2 * 0.7, 0, 0));
             for (i = 0; i < Math.PI * 2; i += dr)
-                pointsOrigin.push(scaleAndTranslate(heartPosition(i), 90, 5, 0, 0));
+                pointsOrigin.push(scaleAndTranslate(heartPosition(i), scale3, scale3 * 0.7, 0, 0));
             var heartPointsCount = pointsOrigin.length;
 
             var targetPoints = [];
